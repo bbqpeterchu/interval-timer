@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interval Timer</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, Arial;
+      background: #121212;
+      color: white;
+      text-align: center;
+    }
+
+    h1 { margin-top: 20px; }
+
+    .container { padding: 20px; }
+
+    input {
+      width: 70px;
+      font-size: 18px;
+      margin: 5px;
+      text-align: center;
+      border-radius: 8px;
+      border: none;
+      padding: 5px;
+    }
+
+    .timer {
+      font-size: 64px;
+      margin: 30px 0;
+    }
+
+    .status {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .round {
+      font-size: 18px;
+      margin-bottom: 20px;
+      opacity: 0.7;
+    }
+
+    .work { color: #4caf50; }
+    .rest { color: #f44336; }
+
+    button {
+      width: 80%;
+      max-width: 250px;
+      padding: 15px;
+      margin: 8px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+    }
+
+    .start { background: #4caf50; color: white; }
+    .pause { background: #ff9800; color: white; }
+    .reset { background: #f44336; color: white; }
+  </style>
+</head>
+
+<body>
+  <h1>Interval Timer</h1>
+
+  <div class="container">
+    <div>
+      Work <input id="work" type="number" value="30">  
+      Rest <input id="rest" type="number" value="10">  
+      Rounds <input id="rounds" type="number" value="5">
+    </div>
+
+    <div id="timer" class="timer">00:30</div>
+    <div id="status" class="status work">Work</div>
+    <div id="round" class="round">Round 1</div>
+
+    <button class="start" onclick="start()">Start</button>
+    <button class="pause" onclick="pause()">Pause</button>
+    <button class="reset" onclick="reset()">Reset</button>
+  </div>
+
+<script>
+let timer;
+let timeLeft;
+let isRunning = false;
+let isWork = true;
+let round = 1;
+
+let audioCtx;
+let voices = [];
+let cantoneseVoice = null;
+
+// ---------------- LOAD VOICES ----------------
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  cantoneseVoice = voices.find(v => v.lang === "zh-HK");
+
+  console.log("Voices:", voices.map(v => v.name + " (" + v.lang + ")"));
+}
+
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+// ---------------- AUDIO ----------------
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function beep(freq = 800, duration = 0.08, volume = 0.1) {
+  initAudio();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.frequency.value = freq;
+  osc.type = "square";
+  gain.gain.value = volume;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+// ---------------- VOICE (CANTONESE) ----------------
+function speak(text) {
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+  }
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  if (cantoneseVoice) {
+    utterance.voice = cantoneseVoice;
+  } else {
+    utterance.lang = "zh-HK"; // fallback
+  }
+
+  speechSynthesis.speak(utterance);
+}
+
+// ---------------- UI ----------------
+function update() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+
+  document.getElementById("timer").textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  document.getElementById("round").textContent = `Round ${round}`;
+}
+
+// ---------------- START ----------------
+function start() {
+  if (isRunning) return;
+
+  const work = +document.getElementById("work").value;
+
+  if (!timeLeft) timeLeft = work;
+
+  speak("開始");
+  beep(600, 0.05);
+
+  isRunning = true;
+
+  timer = setInterval(() => {
+    timeLeft--;
+
+    if (timeLeft > 0) {
+      beep(600, 0.03, 0.05);
+    }
+
+    // countdown (Cantonese)
+    if (isWork) {
+      if (timeLeft === 5) speak("五");
+      if (timeLeft === 4) speak("四");
+      if (timeLeft === 3) speak("三");
+      if (timeLeft === 2) speak("二");
+      if (timeLeft === 1) speak("一");
+
+      if (timeLeft <= 5 && timeLeft > 0) {
+        beep(1000, 0.05, 0.15);
+      }
+    } else {
+      if (timeLeft === 3) speak("三");
+      if (timeLeft === 2) speak("二");
+      if (timeLeft === 1) speak("一");
+
+      if (timeLeft <= 3 && timeLeft > 0) {
+        beep(1000, 0.05, 0.15);
+      }
+    }
+
+    update();
+
+    if (timeLeft <= 0) {
+      const work = +document.getElementById("work").value;
+      const rest = +document.getElementById("rest").value;
+      const rounds = +document.getElementById("rounds").value;
+
+      if (isWork) {
+        if (round === rounds) {
+          clearInterval(timer);
+          speak("做完喇傻西瓜聽日繼續啦");
+          beep(1200, 0.3);
+          alert("做完喇傻西瓜 :D");
+          return;
+        }
+
+        isWork = false;
+        timeLeft = rest;
+
+        speak("抖抖先");
+        beep(400, 0.2);
+
+        document.getElementById("status").textContent = "Rest";
+        document.getElementById("status").className = "status rest";
+
+      } else {
+        round++;
+/*
+        if (round > rounds) {
+          clearInterval(timer);
+          speak("做完喇柒頭");
+          beep(1200, 0.3);
+          alert("做完喇柒頭!!!");
+          return;
+        }
+*/
+        isWork = true;
+        timeLeft = work;
+
+        speak("繼續做喇柒頭");
+        beep(900, 0.2);
+
+        document.getElementById("status").textContent = "Work";
+        document.getElementById("status").className = "status work";
+      }
+    }
+  }, 1000);
+}
+
+// ---------------- PAUSE ----------------
+function pause() {
+  clearInterval(timer);
+  isRunning = false;
+}
+
+// ---------------- RESET ----------------
+function reset() {
+  clearInterval(timer);
+  isRunning = false;
+  isWork = true;
+  round = 1;
+
+  timeLeft = +document.getElementById("work").value;
+
+  document.getElementById("status").textContent = "Work";
+  document.getElementById("status").className = "status work";
+
+  update();
+}
+
+// init
+timeLeft = +document.getElementById("work").value;
+update();
+</script>
+</body>
+</html>

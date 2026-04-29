@@ -288,6 +288,16 @@ function reset() {
 // init
 timeLeft = +document.getElementById("work").value;
 update();
+
+
+// service worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+
+  
 </script>
 </body>
 </html>

@@ -1,0 +1,112 @@
+/* =========================
+   GLOBAL RESET (IMPORTANT)
+========================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #121212 !important;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Arial", sans-serif;
+  text-align: center;
+
+  /* iOS fixes */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+h1 {
+  margin-top: 20px;
+  font-size: 28px;
+}
+
+.container {
+  padding: 20px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+input {
+  width: 70px;
+  font-size: 18px;
+  margin: 5px;
+  text-align: center;
+
+  border-radius: 8px;
+  border: none;
+  padding: 6px;
+
+  background: #1f1f1f;
+  color: white;
+}
+
+/* =========================
+   TIMER DISPLAY
+========================= */
+.timer {
+  font-size: 64px;
+  margin: 30px 0;
+  font-weight: bold;
+}
+
+/* =========================
+   STATUS
+========================= */
+.status {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.round {
+  font-size: 18px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+/* Colors */
+.work {
+  color: #4caf50;
+}
+
+.rest {
+  color: #f44336;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+button {
+  width: 80%;
+  max-width: 250px;
+  padding: 15px;
+  margin: 8px;
+
+  font-size: 18px;
+  border-radius: 12px;
+  border: none;
+
+  color: white;
+}
+
+.start {
+  background: #4caf50;
+}
+
+.pause {
+  background: #ff9800;
+}
+
+.reset {
+  background: #f44336;
+}
+
+/* =========================
+   iOS SAFE AREA (optional but nice)
+========================= */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
